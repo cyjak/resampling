@@ -2,7 +2,7 @@
 \alias{t.test.r}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-%%  ~~function to do ... ~~
+t.test.r %%  ~~function to do ... ~~
 }
 \description{
 Using resampling methods, performs one and two sample t-test on vectors of data.

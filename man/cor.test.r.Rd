@@ -2,7 +2,7 @@
 \alias{cor.test.r}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-%%  ~~function to do ... ~~
+cor.test.r %%  ~~function to do ... ~~
 }
 \description{
 Using resampling methods, test for association between paired samples, using one of Pearson's product moment correlation coefficient, Kendall's tau or Spearman rho.
