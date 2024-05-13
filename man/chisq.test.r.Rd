@@ -2,7 +2,7 @@
 \alias{chisq.test.r}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-%%  ~~function to do ... ~~
+chisq.test.r %%  ~~function to do ... ~~
 }
 \description{
 Using resampling methods, performs chi-squared contingency table tests.}
