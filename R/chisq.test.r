@@ -182,19 +182,40 @@ chisq.test.r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), lengt
 
        x_table = x
        if (boot.type == 'bca'){
-         x = temp_df[, 1]
-         y = temp_df[, 2]
-          cint = boot.bca(x, y, boot.values=boot_theta_hat, theta_hat=theta_hat, paired=TRUE, quantiles=quantiles, fun=function(x,y) sum(x[y==1]) / length(x[y==1]) - sum(x[y==0]) / length(x[y==0]) )
-        }
-        x = x_table
+         # x = temp_df[, 1]
+         # y = temp_df[, 2]
+         #  cint = boot.bca(x, y, boot.values=boot_theta_hat, theta_hat=theta_hat, paired=TRUE, quantiles=quantiles, fun=function(x,y) sum(x[y==1]) / length(x[y==1]) - sum(x[y==0]) / length(x[y==0]) )
+         x1 = xok[yok==0]
+         x2 = xok[yok==1]
 
 
+         boot_theta_hat_valid = boot_theta_hat[!is.nan(boot_theta_hat)]
+         z0 = qnorm(mean(boot_theta_hat_valid <= theta_hat))
+         zq = qnorm(quantiles)
+         nx = length(x1) ; ny = length(x2)
+
+         I <- rep(NA, nx+ny)
+
+         theta_jack = rep(NA, nx+ny)
+         for(i in 1:nx){
+           xnew <- x1[-i]
+           theta_jack[i] <- sum(xnew==1)/length(xnew) - sum(x2==1)/length(x2)
+         }
+
+         for (i in 1:ny){
+           ynew <- x2[-i]
+           theta_jack[nx+i] <- sum(ynew==1)/length(ynew) - sum(x1==1)/length(x1)
+         }
+
+         I <- mean(theta_jack) - theta_jack
+         a <- sum(I^3) / (6 * sum(I^2)^1.5)
+         quantiles = pnorm(z0 + (z0+zq)/(1-a*(z0+zq)))
+         cint = quantile(boot_theta_hat_valid, quantiles)
 
 
-
+      }
     }
   }
-
 
 
 
