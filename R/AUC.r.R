@@ -4,7 +4,7 @@
 #   outy = c(rnorm(50, 0, 1), rnorm(50, 1, 10)),
 #   groupy = rep(0:1, each=50)
 # ))
-#sdf
+#sdfasefsfy
 
 AUC.r = function(formula, data, alternative = c("two.sided", "less", "greater"), pval = TRUE, conf.level = 0.95,
                  seed=0, n.perm=10000, confint = TRUE, pvalue = TRUE, boot.type = c("bca", "percentile"), boot.values = F, perm.values = F,
