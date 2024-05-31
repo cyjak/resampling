@@ -1,3 +1,4 @@
+#' @export
 
 chisq.test.r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), length(x)),
           rescale.p = FALSE, seed=0, n.perm=10000, perm.values = F, pvalue = TRUE,

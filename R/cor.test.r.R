@@ -1,3 +1,4 @@
+#' @export
 
 cor.test.r = function (x, y, alternative = c("two.sided", "less", "greater"),
           method = c("pearson", "kendall", "spearman"), exact = NULL,

@@ -1,4 +1,4 @@
-#
+#' @export
 # set.seed(1)
 # df = data.frame(cbind(
 #   outy = c(rnorm(50, 0, 1), rnorm(50, 1, 10)),
