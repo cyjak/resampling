@@ -13,7 +13,7 @@ t.test.r(x, ...)
 t.test.r(x, y = NULL,
          alternative = c("two.sided", "less", "greater"),
          mu = 0, paired = FALSE, var.equal = FALSE, conf.level = 0.95,
-         n.perm = 10000, seed = 0, boot.type = c("bca", "percentile"),
+         n.perm = 10000, seed = 0, boot.type = c("bca", "percentile"), pvalue.type = c("inverse.boot", "permutation"),
          pvalue = TRUE, confint = TRUE, boot.values = F, perm.values = F, ...)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -28,6 +28,7 @@ t.test.r(x, y = NULL,
    \item{n.perm}{an integer indicating the number of permutations.}
    \item{seed}{an integer indicating the number of the seed to ensure replicability of the random process. Set to \code{NULL} to remove the use of a seed.}
    \item{boot.type}{a character string specifying the bootstrap method to be used for computing the confidence intervals, must be one of "\code{bca}" (default) or "\code{percentile}".}
+   \item{pvalue.type}{a character string specifying the method used to compute the p-value, must be one of "\code{CI.inversion}" (default) or "\code{permutation}". The \code{CI.inversion} uses the confidence interval inversion method, ensuring consistency between the confidence intervals and the p-value.}
    \item{pvalue}{a logical indicating whether you want the p-value to be computed}
    \item{confint}{a logical indicating whether you want the confidence intervals to be computed}
    \item{boot.values}{a logical indicating whether the values of all bootstraps should be returned.}

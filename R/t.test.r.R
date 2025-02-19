@@ -2,11 +2,15 @@
 
 t.test.r = function (x, y = NULL, alternative = c("two.sided", "less", "greater"),
           mu = 0, paired = FALSE, var.equal = FALSE, conf.level = 0.95,
-          seed=0, n.perm=10000, confint = TRUE, pvalue = TRUE, boot.type = c("bca", "percentile"), boot.values = F, perm.values = F,
+          seed=0, n.perm=10000, confint = TRUE, pvalue = TRUE, boot.type = c("bca", "percentile"), pvalue.type = c("CI.inversion", "permutation"), boot.values = F, perm.values = F,
           ...)
 {
   boot.type <- match.arg(boot.type)
   alternative <- match.arg(alternative)
+  pvalue.type <- match.arg(pvalue.type)
+
+  if (pvalue && pvalue.type=='CI.inversion' && alternative!='two.sided') stop("The CI.inversion method for computing the p-value is only availble for two-sided tests. Choose instead the 'permutation' method.")
+
   if (!missing(mu) && (length(mu) != 1 || is.na(mu)))
     stop("'mu' must be a single number")
   if (!missing(conf.level) && (length(conf.level) != 1 || !is.finite(conf.level) ||
@@ -21,14 +25,14 @@ t.test.r = function (x, y = NULL, alternative = c("two.sided", "less", "greater"
       xok <- !is.na(x)
     }
     y <- y[yok]
-  }
-  else {
+  } else {
     dname <- deparse1(substitute(x))
     if (paired)
       stop("'y' is missing for paired test")
     xok <- !is.na(x)
     yok <- NULL
   }
+
   x <- x[xok]
   if (paired) {
     x <- x - y
@@ -52,8 +56,7 @@ t.test.r = function (x, y = NULL, alternative = c("two.sided", "less", "greater"
       else "mean of x")
     n = c(nx)
     theta_hat <- (mx - mu)
-  }
-  else {
+  } else {
     ny <- length(y)
     if (nx < 1 || (!var.equal && nx < 2))
       stop("not enough 'x' observations")
@@ -90,7 +93,7 @@ t.test.r = function (x, y = NULL, alternative = c("two.sided", "less", "greater"
   }
 
   ### permutation
-  if (pvalue){
+  if (pvalue && pvalue.type=='permutation'){
     if (method == 'Two Sample t-test'){
       all_values = c(x,y)
       set.seed(seed)
@@ -186,11 +189,40 @@ t.test.r = function (x, y = NULL, alternative = c("two.sided", "less", "greater"
       # # adjusted quantiles
       # quantiles = pnorm(z0 + (z0+zq)/(1-a*(z0+zq)))
 
+
+
+      pval_precision = 1/n.perm
+      alpha_seq = seq(1e-16, 1 - 1e-16, pval_precision)
+      quantiles_seq = c(alpha_seq/sided, 1-alpha_seq/sided)
+
+
+
       if (method == 'Two Sample t-test'){
-        cint = boot.bca(x, y, boot.values=boot_theta_hat, theta_hat=theta_hat, paired=FALSE, quantiles=quantiles, fun=function(x,y) mean(x)-mean(y)-mu)
-      } else {
-        cint = boot.bca(x, boot.values=boot_theta_hat, theta_hat=theta_hat, paired=FALSE, quantiles=quantiles, fun=function(x) mean(x)-mu)
+        cint     = boot.bca(x, y, boot.values=boot_theta_hat, theta_hat=theta_hat, paired=FALSE, quantiles=quantiles, fun=function(x,y) mean(x)-mean(y)-mu)
+        if (pvalue && pvalue.type=='CI.inversion'){
+          cint_seq = boot.bca(x, y, boot.values=boot_theta_hat, theta_hat=theta_hat, paired=FALSE, quantiles=quantiles_seq, fun=function(x,y) mean(x)-mean(y)-mu)
+        }
+
+      } else {  # not two sample t-test
+        cint     = boot.bca(x, boot.values=boot_theta_hat, theta_hat=theta_hat, paired=FALSE, quantiles=quantiles, fun=function(x) mean(x)-mu)
+        if (pvalue && pvalue.type=='CI.inversion'){
+          cint_seq = boot.bca(x, boot.values=boot_theta_hat, theta_hat=theta_hat, paired=FALSE, quantiles=quantiles_seq, fun=function(x) mean(x)-mu)
+        }
       }
+
+
+      if (pvalue && pvalue.type=='CI.inversion'){
+        ll_seq = cint_seq[1:length(alpha_seq)]
+        ul_seq = cint_seq[(length(alpha_seq)+1): (2*length(alpha_seq))]
+
+        pval = NULL
+        pval = suppressWarnings( alpha_seq[which(ll_seq==min(na.omit(ll_seq[na.omit(ll_seq)>=0])) & !is.na(ll_seq))][1] )
+        if(length(pval)==0 | is.na(pval)) pval = alpha_seq[which(ul_seq==max(na.omit(ul_seq[na.omit(ul_seq)<=0])) & !is.na(ul_seq))][1]
+      }
+
+
+
+
 
     }
     # cint = quantile(boot_theta_hat, quantiles)
@@ -203,8 +235,10 @@ t.test.r = function (x, y = NULL, alternative = c("two.sided", "less", "greater"
 
 
 
-
-  method = paste0(method,' (permutation & bootstrap)')
+  if (!pvalue) { method = paste0(method,' (bootstrap)')
+  } else if (pvalue && pvalue.type=='permutation'){ method = paste0(method,' (permutation & bootstrap)')
+  } else if (pvalue && pvalue.type=='CI.inversion'){ method = paste0(method,' (bootstrap & CI inversion)')}
+  # method = paste0(method,' (permutation & bootstrap)')
 
   names(theta_hat) <- "delta"
   names(n) <- "n"
@@ -228,3 +262,14 @@ t.test.r = function (x, y = NULL, alternative = c("two.sided", "less", "greater"
   class(RVAL) <- "htest"
   RVAL
 }
+
+
+
+
+
+
+# t.test.r(df$outy[df$groupy==0], df$outy[df$groupy==1], paired=T)
+
+
+
+

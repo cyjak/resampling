@@ -9,6 +9,7 @@ boot.bca.lm = function(x, y, theta_hat, boot.values, quantiles){
   n = length(y)
   #I <- data.frame(matrix(nrow=n, ncol=ncol(x)+1))
 
+
   theta_jack = data.frame(matrix(nrow=n, ncol=ncol(x)+1))
 
   for(i in 1:n){

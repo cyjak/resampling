@@ -1,17 +1,15 @@
 #' @export
-# set.seed(1)
-# df = data.frame(cbind(
-#   outy = c(rnorm(50, 0, 1), rnorm(50, 1, 10)),
-#   groupy = rep(0:1, each=50)
-# ))
 
 
-AUC.r = function(formula, data, alternative = c("two.sided", "less", "greater"), pval = TRUE, conf.level = 0.95,
-                 seed=0, n.perm=10000, confint = TRUE, pvalue = TRUE, boot.type = c("bca", "percentile"), boot.values = F, perm.values = F,
+
+AUC.r = function(formula, data, alternative = c("two.sided", "less", "greater"), conf.level = 0.95,
+                 seed=0, n.perm=10000, confint = TRUE, pvalue = TRUE, boot.type = c("bca", "percentile"), pvalue.type = c("CI.inversion", "permutation"), boot.values = F, perm.values = F,
                  ...){
 
   boot.type <- match.arg(boot.type)
   alternative <- match.arg(alternative)
+  pvalue.type <- match.arg(pvalue.type)
+  if (pvalue && pvalue.type=='CI.inversion' && alternative!='two.sided') stop("The CI.inversion method for computing the p-value is only availble for two-sided tests. Choose instead the 'permutation' method.")
 
   quick.auc = function(continuous, binary){
 
@@ -46,7 +44,7 @@ AUC.r = function(formula, data, alternative = c("two.sided", "less", "greater"),
 
 
   ### permutation
-  if (pvalue){
+  if (pvalue && pvalue.type=='permutation'){
     set.seed(seed)
     perm_theta_hat = replicate(n.perm, {
       positions_x = sample(1:n, n, replace=FALSE)
@@ -55,7 +53,7 @@ AUC.r = function(formula, data, alternative = c("two.sided", "less", "greater"),
     })
     temp_quantile = ecdf(perm_theta_hat) (theta_hat)
     temp_quantile = ifelse(temp_quantile>.5, 1-temp_quantile, temp_quantile)
-    p.value = temp_quantile*2
+    pval = temp_quantile*2
   }
 
 
@@ -79,22 +77,25 @@ AUC.r = function(formula, data, alternative = c("two.sided", "less", "greater"),
 
 
     if (boot.type == 'bca'){
-      # z0 = qnorm(mean(boot_theta_hat < theta_hat))
-      # zq = qnorm(quantiles)
-      #
-      # I <- rep(NA, n)
-      # for(i in 1:n){
-      #   contin_new <- continuous[-i]
-      #   binary_new <- binary[-i]
-      #   auc_jack <-  quick.auc(continuous = contin_new, binary = binary_new)
-      #   I[i] <- (n-1)*(theta_hat - auc_jack)
-      # }
-      # a <- (sum(I^3) / sum(I^2)^1.5) / 6
-      #
-      # quantiles = pnorm(z0 + (z0+zq)/(1-a*(z0+zq)))
+
+      pval_precision = 1/n.perm
+      alpha_seq = seq(1e-16, 1 - 1e-16, pval_precision)
+      quantiles_seq = c(alpha_seq/sided, 1-alpha_seq/sided)
 
       x = continuous ; y = binary
       cint = boot.bca(x, y, boot.values=boot_theta_hat, theta_hat=theta_hat, paired=TRUE, quantiles=quantiles, fun=function(x,y) quick.auc(continuous = x, binary = y))
+
+      if (pvalue && pvalue.type=='CI.inversion'){
+        cint_seq = boot.bca(x, y, boot.values=boot_theta_hat, theta_hat=theta_hat, paired=TRUE, quantiles=quantiles_seq, fun=function(x,y) quick.auc(continuous = x, binary = y))
+
+        ll_seq = cint_seq[1:length(alpha_seq)]
+        ul_seq = cint_seq[(length(alpha_seq)+1): (2*length(alpha_seq))]
+
+        pval = NULL
+        pval = suppressWarnings( alpha_seq[which(ll_seq==min(na.omit(ll_seq[na.omit(ll_seq)>=.5])) & !is.na(ll_seq))][1] )
+        if(length(pval)==0 | is.na(pval)) pval = alpha_seq[which(ul_seq==max(na.omit(ul_seq[na.omit(ul_seq)<=.5])) & !is.na(ul_seq))][1]
+      }
+
 
     }
 
@@ -116,14 +117,18 @@ AUC.r = function(formula, data, alternative = c("two.sided", "less", "greater"),
 
 
 
-  method = 'AUC (permutation & bootstrap)' ; null.value = 0.5
+  method_label = 'AUC' ; null.value = 0.5
+  if (!pvalue) { method_label = paste0(method_label,' (bootstrap)')
+  } else if (pvalue && pvalue.type=='permutation'){ method_label = paste0(method_label,' (permutation & bootstrap)')
+  } else if (pvalue && pvalue.type=='CI.inversion'){ method_label = paste0(method_label,' (bootstrap & CI inversion)')}
+
   data.name = paste(deparse1(substitute(data)))
 
   RVAL <- list(
-               estimate = theta_hat, null.value = null.value, method = method, data.name = data.name
+               estimate = theta_hat, null.value = null.value, method = method_label, data.name = data.name
                )
 
-  if (pval) RVAL = c(RVAL, list(p.value = p.value))
+  if (pvalue) RVAL = c(RVAL, list(p.value = pval))
   if (confint) RVAL = c(RVAL, list(boot.type = boot.type,
                                    conf.int = cint))
   if (boot.values) RVAL = c(RVAL, list(boot.values = boot_theta_hat))
@@ -137,7 +142,13 @@ AUC.r = function(formula, data, alternative = c("two.sided", "less", "greater"),
 }
 
 
-# AUC.r(outy ~ groupy, df, boot.type = 'bca', pval=T, confint=T)
+
+# set.seed(1)
+# df = data.frame(cbind(
+#   outy = c(rnorm(50, 0, 1), rnorm(50, 1, 10)),
+#   groupy = rep(0:1, each=50)
+# ))
+# AUC.r(outy ~ groupy, df, boot.type = 'bca', pvalue=T, confint=T)
 #
 #
 #

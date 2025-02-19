@@ -1,5 +1,3 @@
-#' @export
-
 
 
 lm.r = function(formula, data, conf.level = 0.95,
@@ -23,12 +21,13 @@ lm.r = function(formula, data, conf.level = 0.95,
 
     set.seed(seed)
     func = function(data, indices){
-      lm.chol(as.formula(formula), data[indices,])[, 1]
+      #lm.chol(as.formula(formula), data[indices,])[, 1]
+      my.lm(as.formula(formula), data[indices,])$coeff[,1]
     }
     foo = boot::boot(data, R=n.perm, statistic=func)
 
     if (boot.type == 'bca'){
-      cint = boot.bca.lm(x=data[, all.vars(formula)[2:length(all.vars(formula))]], y=data[[formula[[2]]]], theta_hat=coefficients[, 'Estimate'], boot.values=foo$t, quantiles=quantiles)
+      cint = boot.bca.lm(x=data[, all.vars(formula)[2:length(all.vars(formula))], drop=FALSE], y=data[[formula[[2]]]], theta_hat=coefficients[, 'Estimate'], boot.values=foo$t, quantiles=quantiles)
     }
 
     coefficients$lower = cint[, 2]
@@ -68,12 +67,12 @@ lm.r = function(formula, data, conf.level = 0.95,
 }
 
 
-df = data.frame(x1=rnorm(100,0,1), x5=rnorm(100,0,1)); df$y = rnorm(100,10,20)+df$x1+10*df$x5
-lm.r(y~x1+x5, df, confint = T, n.perm=10000, pvalue = F)
-
-mody = lm(y~x1+x5, df)
-summary(mody)$coefficients ; confint(mody)
-
+# df = data.frame(x1=rnorm(100,0,1), x5=rnorm(100,0,1)); df$y = rnorm(100,10,20)+df$x1+10*df$x5
+# lm.r(y~x1+x5, df, confint = T, n.perm=10000, pvalue = F)
+#
+# mody = lm(y~x1+x5, df)
+# summary(mody)$coefficients ; confint(mody)
+#
 
 
 

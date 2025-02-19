@@ -2,10 +2,11 @@
 
 chisq.test.r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), length(x)),
           rescale.p = FALSE, seed=0, n.perm=10000, perm.values = F, pvalue = TRUE,
-          confint = TRUE, conf.level = 0.95, boot.type = c("bca"), boot.values = F)
+          confint = TRUE, conf.level = 0.95, boot.type = c("bca"), pvalue.type = c("CI.inversion", "permutation"), boot.values = F)
 {
 
   boot.type <- match.arg(boot.type)
+  pvalue.type <- match.arg(pvalue.type)
   get.statistic = function(x, YATES){
     row_sums  = rowSums(x)
     col_sums  = colSums(x)
@@ -13,6 +14,7 @@ chisq.test.r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), lengt
     E = outer(row_sums, col_sums) / total_obs
     sum((abs(x - E) - YATES)^2/E)
   }
+  if (pvalue && pvalue.type=='CI.inversion' && alternative!='two.sided') stop("The CI.inversion method for computing the p-value is only availble for two-sided tests. Choose instead the 'permutation' method.")
 
 
   DNAME <- deparse(substitute(x))
@@ -53,7 +55,7 @@ chisq.test.r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), lengt
 
 
   if (is.matrix(x)) {
-    METHOD <- "Pearson's Chi-squared test"
+    method_label <- "Pearson's Chi-squared test"
     nr <- as.integer(nrow(x))
     nc <- as.integer(ncol(x))
     if (is.na(nr) || is.na(nc) || is.na(nr * nc)){
@@ -89,14 +91,14 @@ chisq.test.r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), lengt
   if (is.null(rownames(x))) rownames(x) = 1:nrow(x)
 
   PARAMETER <- NA
-  PVAL <- 1
+  pval <- 1
 
 
 
   if (correct && nrow(x) >= 2L && ncol(x) >= 2L) {
     YATES <- min(0.5, abs(x - E))
     if (YATES > 0)
-      METHOD <- paste(METHOD, "with Yates' continuity correction")
+      method_label <- paste(method_label, "with Yates' continuity correction")
 
     }  else YATES <- 0
   STATISTIC <- sum((abs(x - E) - YATES)^2/E)
@@ -108,7 +110,7 @@ chisq.test.r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), lengt
 
 
   ### permutation
-  if (pvalue){
+  if (pvalue && pvalue.type=='permutation'){
     set.seed(seed)
     x1 = c() ; y1 = c()
     for (col in 1:ncol(x))    x1 = c(x1, rep(colnames(x)[col], col_sums[col]))
@@ -121,7 +123,7 @@ chisq.test.r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), lengt
     })
 
     temp_quantile = ecdf(-abs(perm_theta_hat)) (-abs(STATISTIC))
-    PVAL = temp_quantile
+    pval = temp_quantile
   }
 
 
@@ -182,9 +184,7 @@ chisq.test.r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), lengt
 
        x_table = x
        if (boot.type == 'bca'){
-         # x = temp_df[, 1]
-         # y = temp_df[, 2]
-         #  cint = boot.bca(x, y, boot.values=boot_theta_hat, theta_hat=theta_hat, paired=TRUE, quantiles=quantiles, fun=function(x,y) sum(x[y==1]) / length(x[y==1]) - sum(x[y==0]) / length(x[y==0]) )
+
          x1 = xok[yok==0]
          x2 = xok[yok==1]
 
@@ -212,6 +212,24 @@ chisq.test.r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), lengt
          quantiles = pnorm(z0 + (z0+zq)/(1-a*(z0+zq)))
          cint = quantile(boot_theta_hat_valid, quantiles)
 
+         if (pvalue && pvalue.type=='CI.inversion'){
+           pval_precision = 1/n.perm
+           alpha_seq = seq(1e-16, 1 - 1e-16, pval_precision)
+           quantiles_seq = c(alpha_seq/sided, 1-alpha_seq/sided)
+           zq_seq = qnorm(quantiles_seq)
+           quantiles_seq = pnorm(z0 + (z0+zq_seq)/(1-a*(z0+zq_seq)))
+
+           cint_seq = quantile(boot_theta_hat_valid, quantiles_seq)
+
+
+           ll_seq = cint_seq[1:length(alpha_seq)]
+           ul_seq = cint_seq[(length(alpha_seq)+1): (2*length(alpha_seq))]
+
+           pval = NULL
+           pval = suppressWarnings( alpha_seq[which(ll_seq==min(na.omit(ll_seq[na.omit(ll_seq)>=0])) & !is.na(ll_seq))][1] )
+           if(length(pval)==0 | is.na(pval)) pval = alpha_seq[which(ul_seq==max(na.omit(ul_seq[na.omit(ul_seq)<=0])) & !is.na(ul_seq))][1]
+         }
+
 
       }
     }
@@ -221,17 +239,22 @@ chisq.test.r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), lengt
 
 
   PARAMETER = total_obs
-  METHOD = paste0(METHOD,' permutation & bootstrap')
+
+
+  if (!pvalue) { method_label = paste0(method_label,' (bootstrap)')
+  } else if (pvalue && pvalue.type=='permutation'){ method_label = paste0(method_label,' (permutation & bootstrap)')
+  } else if (pvalue && pvalue.type=='CI.inversion'){ method_label = paste0(method_label,' (bootstrap & CI inversion)')}
+
   names(STATISTIC) <- "X-squared"
   names(PARAMETER) <- "n"
   if (any(E < 5) && is.finite(PARAMETER))
     warning("Chi-squared approximation may be incorrect")
 
   RVAL = list(parameter = PARAMETER, estimate = estimate,
-                 method = METHOD, data.name = DNAME, observed = x,
+                 method = method_label, data.name = DNAME, observed = x,
                  expected = E, residuals = (x - E)/sqrt(E))
 
-  if (pvalue) RVAL = c(RVAL, list(statistic = STATISTIC, p.value = PVAL))
+  if (pvalue) RVAL = c(RVAL, list(statistic = STATISTIC, p.value = pval))
 
   if (perm.values) RVAL = c(RVAL, list(perm.values = perm_theta_hat))
 
@@ -245,7 +268,7 @@ chisq.test.r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), lengt
 
 
 
-#
+
 # x = data.frame(x1=c(20, 80), x2=c(50,50))
 #
 # #chisq.test.r(x)
@@ -254,7 +277,7 @@ chisq.test.r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), lengt
 # y=rep(0:1, each=50)
 # chisq.test.r(x, y, pvalue=T, confint=T, correct = F)
 # chisq.test(x, y, correct=F)
-#
+# chisq.test.r(x, y)
 #
 # tt = chisq.test.r(x=data.frame(x1=c(20, 80), x2=c(50,50)), pvalue=T, boot.values = T)
 # tt
