@@ -3,6 +3,7 @@
 t.test.r = function (x, y = NULL, alternative = c("two.sided", "less", "greater"),
           mu = 0, paired = FALSE, var.equal = FALSE, conf.level = 0.95,
           seed=0, n.perm=10000, confint = TRUE, pvalue = TRUE, boot.type = c("bca", "percentile"), pvalue.type = c("CI.inversion", "permutation"), boot.values = F, perm.values = F,
+          check.variance = TRUE,
           ...)
 {
   boot.type <- match.arg(boot.type)
@@ -46,7 +47,7 @@ t.test.r = function (x, y = NULL, alternative = c("two.sided", "less", "greater"
     if (nx < 2)
       stop("not enough 'x' observations")
     stderr <- sqrt(vx/nx)
-    if (stderr < 10 * .Machine$double.eps * abs(mx))
+    if (check.variance & (stderr < 10 * .Machine$double.eps * abs(mx)))
       stop("data are essentially constant")
     method <- if (paired)
       "Paired t-test"
@@ -85,8 +86,7 @@ t.test.r = function (x, y = NULL, alternative = c("two.sided", "less", "greater"
       stderry <- sqrt(vy/ny)
       stderr <- sqrt(stderrx^2 + stderry^2)
     }
-    if (stderr < 10 * .Machine$double.eps * max(abs(mx),
-                                                abs(my)))
+    if (check.variance & (stderr < 10 * .Machine$double.eps * max(abs(mx), abs(my))))
       stop("data are essentially constant")
     theta_hat <- (mx - my - mu)
     n = c(nx, ny)

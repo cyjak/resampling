@@ -22,7 +22,8 @@ chisq.test.r(x, y = NULL, correct = TRUE,
   \item{n.perm}{an integer indicating the number of permutations.}
   \item{seed}{an integer indicating the number of the seed to ensure replicability of the random process. Set to \code{NULL} to remove the use of a seed.}
   \item{perm.values}{a logical indicating whether the values of all permutations should be returned.}
-  \item{pvalue}{a logical indicating whether you want the p-value to be computed}
+   \item{pvalue.type}{a character string specifying the method used to compute the p-value, must be one of "\code{CI.inversion}" (default) or "\code{permutation}". The \code{CI.inversion} uses the confidence interval inversion method, ensuring consistency between the confidence intervals and the p-value.}
+   \item{pvalue}{a logical indicating whether you want the p-value to be computed}
   \item{confint}{a logical indicating whether you want the confidence intervals to be computed. Only used for 2x2 tables.}
   \item{conf.level}{confidence level for the returned confidence interval.}
   \item{boot.type}{a character string specifying the bootstrap method to be used for computing the confidence intervals.}

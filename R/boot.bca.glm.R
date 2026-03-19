@@ -1,9 +1,9 @@
 
 
-boot.bca.lm = function(data, n, theta_hat, boot.values, quantiles, alpha, IVs){
+boot.bca.glm = function(data, n, theta_hat, boot.values, quantiles, alpha, IVs, dist, link){
 
   theta_jack = data.frame(matrix(nrow=n, ncol=ncol(data)))
-  for(i in 1:n)      theta_jack[i, ] <- c(my.lm(formula, data[-i, ])$coeff)
+  for(i in 1:n)      theta_jack[i, ] <- c(my.glm(formula, data[-i, ], dist=dist, link=link)$coeff)
 
   I <- sweep(theta_jack, 2, colMeans(theta_jack), FUN='-')
   a <- colSums(I^3) / (6 * colSums(I^2)^1.5)
@@ -29,11 +29,3 @@ boot.bca.lm = function(data, n, theta_hat, boot.values, quantiles, alpha, IVs){
   # names(output) = c('variable','ll_value','ul_value','ll_quantile','ul_quantile')
   return(output)
 }
-
-
-
-
-
-
-
-

@@ -5,9 +5,7 @@ boot.bca = function(x, y=NULL, theta_hat, boot.values, fun, paired, quantiles){
 
 
   if (is.null(y)){
-
     n = length(x)
-
     theta_jack = rep(NA, n)
     for(i in 1:n){
       xnew <- x[-i]
@@ -16,9 +14,7 @@ boot.bca = function(x, y=NULL, theta_hat, boot.values, fun, paired, quantiles){
 
 
   } else if (!paired) { # if y is not null
-
     nx = length(x) ; ny = length(y)
-
     theta_jack = rep(NA, nx+ny)
     for(i in 1:nx){
       xnew <- x[-i]
@@ -32,9 +28,7 @@ boot.bca = function(x, y=NULL, theta_hat, boot.values, fun, paired, quantiles){
 
 
   } else {  # if paired
-
     n = length(x)
-
     theta_jack = rep(NA, n)
     for(i in 1:n){
       xnew <- x[-i]
