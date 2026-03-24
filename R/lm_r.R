@@ -1,6 +1,6 @@
 #' @export
 
-lm.r = function(formula, data, conf.level = 0.95,
+lm_r = function(formula, data, conf.level = 0.95,
                 seed=0, n.perm=10000, confint = TRUE, pvalue = TRUE, boot.type = c("bca", "percentile"), pvalue.type = c("CI.inversion", "permutation"), boot.values = F, perm.values = F,
                 ...){
 

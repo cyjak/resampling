@@ -1,13 +1,13 @@
-\name{chisq.test.r}
-\alias{chisq.test.r}
+\name{chisq_test_r}
+\alias{chisq_test_r}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-chisq.test.r %%  ~~function to do ... ~~
+chisq_test_r %%  ~~function to do ... ~~
 }
 \description{
 Using resampling methods, performs chi-squared contingency table tests.}
 \usage{
-chisq.test.r(x, y = NULL, correct = TRUE,
+chisq_test_r(x, y = NULL, correct = TRUE,
              p = rep(1/length(x), length(x)), rescale.p = FALSE,
              n.perm = 10000, seed = 0, perm.values = F, pvalue = TRUE,
           confint = TRUE, conf.level = 0.95, boot.type = c("bca"), boot.values = F)

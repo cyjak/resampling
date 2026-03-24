@@ -2,7 +2,7 @@
 
 
 
-AUC.r = function(formula, data, alternative = c("two.sided", "less", "greater"), conf.level = 0.95,
+AUC_r = function(formula, data, alternative = c("two.sided", "less", "greater"), conf.level = 0.95,
                  seed=0, n.perm=10000, confint = TRUE, pvalue = TRUE, boot.type = c("bca", "percentile"), pvalue.type = c("CI.inversion", "permutation"), boot.values = F, perm.values = F,
                  ...){
 

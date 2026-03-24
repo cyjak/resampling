@@ -1,6 +1,6 @@
 #' @export
 
-glm.r = function(formula, data, dist = "gaussian", link = "identity", conf.level = 0.95,
+glm_r = function(formula, data, dist = "gaussian", link = "identity", conf.level = 0.95,
                 seed=0, n.perm=10000, confint = TRUE, pvalue = TRUE, boot.type = c("bca", "percentile"), pvalue.type = c("CI.inversion"), boot.values = F, perm.values = F,
                 ...){
 
@@ -13,10 +13,10 @@ glm.r = function(formula, data, dist = "gaussian", link = "identity", conf.level
   namy = c('(Intercept)', IVs)
   dname = paste(deparse1(substitute(data)))
   data = data[complete.cases(data[, all_variables]), all_variables]
-  mod = glm(formula, data, family=do.call(dist, list(link = link)))
   # theta_hat = data.frame(summary(mod)$coefficient[, 1])
   theta_hat = c(my.glm(formula, data, dist=dist, link=link)$coeff)
   formula = as.formula(formula)
+  mod = glm(formula, data, family=do.call(dist, list(link = link)))
   n = nrow(data)
 
 
@@ -31,7 +31,7 @@ glm.r = function(formula, data, dist = "gaussian", link = "identity", conf.level
     set.seed(seed)
 
     boot.values = t(as.data.frame(replicate(n.perm, {my.glm(formula, df[sample(n, n, replace=TRUE), ], dist=dist, link=link)$coeff})))
-    output = boot.bca.glm(data = data, n = n, theta_hat = theta_hat, boot.values = boot.values, quantiles = quantiles, alpha = alpha, IVs = IVs, dist=dist, link=link)
+    output = boot.bca.glm(data=data, n=n, theta_hat=theta_hat, boot.values=boot.values, quantiles=quantiles, alpha=alpha, IVs=IVs, dist=dist, link=link)
     coefficients = data.frame(row.names = namy,
                               Estimate = theta_hat,
                               lower = as.numeric(output[output$quantiles==quantiles[1], 3:ncol(output)]),

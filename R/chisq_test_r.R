@@ -1,6 +1,6 @@
 #' @export
 
-chisq.test.r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), length(x)),
+chisq_test_r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), length(x)),
           rescale.p = FALSE, seed=0, n.perm=10000, perm.values = F, pvalue = TRUE,
           confint = TRUE, conf.level = 0.95, boot.type = c("bca"), pvalue.type = c("CI.inversion", "permutation"), boot.values = F)
 {

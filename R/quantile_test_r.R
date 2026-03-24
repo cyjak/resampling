@@ -1,6 +1,6 @@
 #' @export
 
-quantile.test.r = function (x, y = NULL, quantile = 0.5,  alternative = c("two.sided", "less", "greater"),
+quantile_test_r = function (x, y = NULL, quantile = 0.5,  alternative = c("two.sided", "less", "greater"),
                      mu = 0, conf.level = 0.95,
                      seed=0, n.perm=10000, confint = TRUE, pvalue = TRUE, boot.type = c("bca", "percentile"), boot.values = F, perm.values = F,
                      ...){

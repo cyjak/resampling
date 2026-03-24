@@ -1,16 +1,16 @@
-\name{t.test.r}
-\alias{t.test.r}
+\name{t_test_r}
+\alias{t_test_r}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-t.test.r %%  ~~function to do ... ~~
+t_test_r %%  ~~function to do ... ~~
 }
 \description{
 Using resampling methods, performs one and two sample t-test on vectors of data.
 }
 \usage{
-t.test.r(x, ...)
+t_test_r(x, ...)
 
-t.test.r(x, y = NULL,
+t_test_r(x, y = NULL,
          alternative = c("two.sided", "less", "greater"),
          mu = 0, paired = FALSE, var.equal = FALSE, conf.level = 0.95,
          n.perm = 10000, seed = 0, boot.type = c("bca", "percentile"), pvalue.type = c("inverse.boot", "permutation"),
@@ -77,13 +77,13 @@ x = rnorm(n = 100, mean = 1, sd = 10)
 y = rnorm(n = 100, mean = 0, sd = 10)
 
 ## One sample t-test
-t.test.r(x)
+t_test_r(x)
 
 ## Two independent sample t-test
-t.test.r(x, y)
+t_test_r(x, y)
 
 ## Paired t-test
-t.test.r(x, y, paired = TRUE)
+t_test_r(x, y, paired = TRUE)
 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

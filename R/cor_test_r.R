@@ -1,6 +1,6 @@
 #' @export
 
-cor.test.r = function (x, y, alternative = c("two.sided", "less", "greater"),
+cor_test_r = function (x, y, alternative = c("two.sided", "less", "greater"),
           method = c("pearson", "kendall", "spearman"),
           conf.level = 0.95, seed=0, n.perm=10000, confint=TRUE, pvalue=TRUE, boot.type = c("bca", "percentile"), pvalue.type = c("CI.inversion", "permutation"), boot.values = F, perm.values = F,
           ...)

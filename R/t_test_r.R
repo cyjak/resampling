@@ -1,6 +1,6 @@
 #' @export
-
-t.test.r = function (x, y = NULL, alternative = c("two.sided", "less", "greater"),
+#'
+t_test_r = function (x, y = NULL, alternative = c("two.sided", "less", "greater"),
           mu = 0, paired = FALSE, var.equal = FALSE, conf.level = 0.95,
           seed=0, n.perm=10000, confint = TRUE, pvalue = TRUE, boot.type = c("bca", "percentile"), pvalue.type = c("CI.inversion", "permutation"), boot.values = F, perm.values = F,
           check.variance = TRUE,

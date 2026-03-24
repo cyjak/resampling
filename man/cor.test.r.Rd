@@ -1,14 +1,14 @@
-\name{cor.test.r}
-\alias{cor.test.r}
+\name{cor_test_r}
+\alias{cor_test_r}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-cor.test.r %%  ~~function to do ... ~~
+cor_test_r %%  ~~function to do ... ~~
 }
 \description{
 Using resampling methods, test for association between paired samples, using one of Pearson's product moment correlation coefficient, Kendall's tau or Spearman rho.
 }
 \usage{
-cor.test.r(x, y)
+cor_test_r(x, y)
 
 cor.test(x, y,
          alternative = c("two.sided", "less", "greater"),
@@ -73,13 +73,13 @@ x = rnorm(n = 100, mean = 0, sd = 1)
 y = rnorm(n = 100, mean = 0, sd = 1) + x
 
 ## Pearson's correlation
-cor.test.r(x, y)
+cor_test_r(x, y)
 
 ## Spearman's correlation
-cor.test.r(x, y, method = "spearman")
+cor_test_r(x, y, method = "spearman")
 
 ## Kendall's correlation
-cor.test.r(x, y, method = "kendall")
+cor_test_r(x, y, method = "kendall")
 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
