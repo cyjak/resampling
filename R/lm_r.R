@@ -30,7 +30,7 @@ lm_r = function(formula, data, conf.level = 0.95,
 
     set.seed(seed)
 
-    boot.values = t(as.data.frame(replicate(n.perm, {my.lm(formula, df[sample(n, n, replace=TRUE), ])$coeff})))
+    boot.values = t(as.data.frame(replicate(n.perm, {my.lm(formula, data[sample(n, n, replace=TRUE), ])$coeff})))
     output = boot.bca.lm(data = data, n = n, theta_hat = theta_hat, boot.values = boot.values, quantiles = quantiles, alpha = alpha, IVs = IVs)
     coefficients = data.frame(row.names = namy,
                               Estimate = theta_hat,

@@ -30,7 +30,7 @@ glm_r = function(formula, data, dist = "gaussian", link = "identity", conf.level
 
     set.seed(seed)
 
-    boot.values = t(as.data.frame(replicate(n.perm, {my.glm(formula, df[sample(n, n, replace=TRUE), ], dist=dist, link=link)$coeff})))
+    boot.values = t(as.data.frame(replicate(n.perm, {my.glm(formula, data[sample(n, n, replace=TRUE), ], dist=dist, link=link)$coeff})))
     output = boot.bca.glm(data=data, n=n, theta_hat=theta_hat, boot.values=boot.values, quantiles=quantiles, alpha=alpha, IVs=IVs, dist=dist, link=link)
     coefficients = data.frame(row.names = namy,
                               Estimate = theta_hat,
