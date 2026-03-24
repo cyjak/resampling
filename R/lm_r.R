@@ -8,6 +8,7 @@ lm_r = function(formula, data, conf.level = 0.95,
   pvalue.type <- match.arg(pvalue.type)
   alpha <- 1 - conf.level
 
+  formula = as.formula(formula)
   all_variables = as.character( attr(terms(formula), 'variables')[-1])
   IVs = all_variables[-1]
   namy = c('(Intercept)', IVs)
@@ -16,7 +17,6 @@ lm_r = function(formula, data, conf.level = 0.95,
   mod = lm(formula, data)
   # theta_hat = data.frame(summary(mod)$coefficient[, 1])
   theta_hat = c(my.lm(formula, data)$coeff)
-  formula = as.formula(formula)
   n = nrow(data)
 
 

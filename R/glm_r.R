@@ -8,6 +8,7 @@ glm_r = function(formula, data, dist = "gaussian", link = "identity", conf.level
   pvalue.type <- match.arg(pvalue.type)
   alpha <- 1 - conf.level
 
+  formula = as.formula(formula)
   all_variables = as.character( attr(terms(formula), 'variables')[-1])
   IVs = all_variables[-1]
   namy = c('(Intercept)', IVs)
@@ -15,7 +16,6 @@ glm_r = function(formula, data, dist = "gaussian", link = "identity", conf.level
   data = data[complete.cases(data[, all_variables]), all_variables]
   # theta_hat = data.frame(summary(mod)$coefficient[, 1])
   theta_hat = c(my.glm(formula, data, dist=dist, link=link)$coeff)
-  formula = as.formula(formula)
   mod = glm(formula, data, family=do.call(dist, list(link = link)))
   n = nrow(data)
 
