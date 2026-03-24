@@ -1,6 +1,6 @@
 
 
-boot.bca.lm = function(data, n, theta_hat, boot.values, quantiles, alpha, IVs){
+boot.bca.lm = function(formula, data, n, theta_hat, boot.values, quantiles, alpha, IVs){
 
   theta_jack = data.frame(matrix(nrow=n, ncol=ncol(data)))
   for(i in 1:n)      theta_jack[i, ] <- c(my.lm(formula, data[-i, ])$coeff)

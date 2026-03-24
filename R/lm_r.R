@@ -8,7 +8,9 @@ lm_r = function(formula, data, conf.level = 0.95,
   pvalue.type <- match.arg(pvalue.type)
   alpha <- 1 - conf.level
 
-  formula = as.formula(formula)
+
+
+  # formula <- as.formula(formula)
   all_variables = as.character( attr(terms(formula), 'variables')[-1])
   IVs = all_variables[-1]
   namy = c('(Intercept)', IVs)
@@ -23,15 +25,13 @@ lm_r = function(formula, data, conf.level = 0.95,
   if (n < length(all_variables)) stop("The number of complete case observation must be greater or equal to the number of parameters being estimated.")
 
 
-
   if (confint){
     sided=2
     quantiles = c(alpha/sided, 1-alpha/sided)
 
     set.seed(seed)
-
     boot.values = t(as.data.frame(replicate(n.perm, {my.lm(formula, data[sample(n, n, replace=TRUE), ])$coeff})))
-    output = boot.bca.lm(data = data, n = n, theta_hat = theta_hat, boot.values = boot.values, quantiles = quantiles, alpha = alpha, IVs = IVs)
+    output = boot.bca.lm(formula=formula, data = data, n = n, theta_hat = theta_hat, boot.values = boot.values, quantiles = quantiles, alpha = alpha, IVs = IVs)
     coefficients = data.frame(row.names = namy,
                               Estimate = theta_hat,
                               lower = as.numeric(output[output$quantiles==quantiles[1], 3:ncol(output)]),
@@ -46,7 +46,7 @@ lm_r = function(formula, data, conf.level = 0.95,
     alpha_seq = seq(1e-16, 1 - 1e-16, pval_precision)
     quantiles_seq = c(alpha_seq/sided, 1-alpha_seq/sided)
 
-    cint_seq = boot.bca.lm(data = data, n = n, theta_hat = theta_hat, boot.values = boot.values, quantiles = quantiles_seq, alpha = alpha_seq, IVs = IVs)
+    cint_seq = boot.bca.lm(formula=formula, data = data, n = n, theta_hat = theta_hat, boot.values = boot.values, quantiles = quantiles_seq, alpha = alpha_seq, IVs = IVs)
 
     ll_seq = cint_seq[1:length(alpha_seq), ]
     ul_seq = cint_seq[(length(alpha_seq)+1): (2*length(alpha_seq)), ]
@@ -114,18 +114,21 @@ lm_r = function(formula, data, conf.level = 0.95,
 
 
 
-# n=100
-# df = data.frame(x1=rnorm(n,0,1), x5=rnorm(n,0,1)); df$y = rnorm(n,10,20)+-1*df$x1+3*df$x5
 # formula = as.formula('y~x1+x5')
 # data = df; conf.level = 0.95; seed=0; n.perm=10000; confint = TRUE; pvalue = TRUE; boot.type = "bca"; boot.values = F; perm.values = F; pvalue.type = "CI.inversion"
+# n=100
+# df = data.frame(x1=rnorm(n,0,1), x5=rnorm(n,0,1)); df$y = rnorm(n,10,20)+-1*df$x1+3*df$x5
 #
-# tt=lm.r(y~x1+x5, df, confint = T, n.perm=10000, pvalue = T)$coefficients; tt
+# tt=lm_r(y~x1+x5, df, confint=T, n.perm=1000, pvalue=T)$coefficients; tt
+
+
+
 # summary(lm(y~x1+x5, df))$coefficient
 # confint(lm(y~x1+x5, df))
 #
 # tictoc::tic()
-# tt = lm.r(y~x1+x5, df, confint = T, n.perm=10000, pvalue = T); tt
-# tt = lm.r(y~x1+x5, df, confint = T, n.perm=10000, pvalue = T, pvalue.type='permutation'); tt
+# tt = lm_r(y~x1+x5, df, confint = T, n.perm=10000, pvalue = T); tt
+# tt = lm_r(y~x1+x5, df, confint = T, n.perm=10000, pvalue = T, pvalue.type='permutation'); tt
 # tictoc::toc()
 #
 # # mody = lm(y~x1+x5, df)
@@ -137,8 +140,8 @@ lm_r = function(formula, data, conf.level = 0.95,
 #
 # tt=t.test.r(df$y[df$x==1], df$y[df$x==0])
 # tt
-# lm.r(y~x, df, confint = T, n.perm=10000, pvalue = F)$coefficients
-# lm.r(y~x, df, confint = T, n.perm=10000, pvalue = F)
+# lm_r(y~x, df, confint = T, n.perm=10000, pvalue = F)$coefficients
+# lm_r(y~x, df, confint = T, n.perm=10000, pvalue = F)
 
 
 

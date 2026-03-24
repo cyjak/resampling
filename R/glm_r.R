@@ -8,7 +8,7 @@ glm_r = function(formula, data, dist = "gaussian", link = "identity", conf.level
   pvalue.type <- match.arg(pvalue.type)
   alpha <- 1 - conf.level
 
-  formula = as.formula(formula)
+  formula <- as.formula(formula)
   all_variables = as.character( attr(terms(formula), 'variables')[-1])
   IVs = all_variables[-1]
   namy = c('(Intercept)', IVs)
@@ -31,7 +31,7 @@ glm_r = function(formula, data, dist = "gaussian", link = "identity", conf.level
     set.seed(seed)
 
     boot.values = t(as.data.frame(replicate(n.perm, {my.glm(formula, data[sample(n, n, replace=TRUE), ], dist=dist, link=link)$coeff})))
-    output = boot.bca.glm(data=data, n=n, theta_hat=theta_hat, boot.values=boot.values, quantiles=quantiles, alpha=alpha, IVs=IVs, dist=dist, link=link)
+    output = boot.bca.glm(formula=formula, data=data, n=n, theta_hat=theta_hat, boot.values=boot.values, quantiles=quantiles, alpha=alpha, IVs=IVs, dist=dist, link=link)
     coefficients = data.frame(row.names = namy,
                               Estimate = theta_hat,
                               lower = as.numeric(output[output$quantiles==quantiles[1], 3:ncol(output)]),
@@ -46,7 +46,7 @@ glm_r = function(formula, data, dist = "gaussian", link = "identity", conf.level
     alpha_seq = seq(1e-16, 1 - 1e-16, pval_precision)
     quantiles_seq = c(alpha_seq/sided, 1-alpha_seq/sided)
 
-    cint_seq = boot.bca.glm(data = data, n = n, theta_hat = theta_hat, boot.values = boot.values, quantiles = quantiles_seq, alpha = alpha_seq, IVs = IVs, dist=dist, link=link)
+    cint_seq = boot.bca.glm(formula=formula, data = data, n = n, theta_hat = theta_hat, boot.values = boot.values, quantiles = quantiles_seq, alpha = alpha_seq, IVs = IVs, dist=dist, link=link)
 
     ll_seq = cint_seq[1:length(alpha_seq), ]
     ul_seq = cint_seq[(length(alpha_seq)+1): (2*length(alpha_seq)), ]
@@ -119,15 +119,18 @@ glm_r = function(formula, data, dist = "gaussian", link = "identity", conf.level
 # set.seed(0)
 # n=100
 # df = data.frame(x1=rnorm(n,0,1), x5=rnorm(n,0,1)); df$y = rbinom(n,1,.5)
-# formula = as.formula('y~x1+x5')
-# data = df; conf.level = 0.95; seed=0; n.perm=10000; confint = TRUE; pvalue = TRUE; boot.type = "bca"; boot.values = F; perm.values = F; pvalue.type = "CI.inversion"; dist='binomial'; link='logit'
+# # formula = as.formula('y~x1+x5')
+# # data = df; conf.level = 0.95; seed=0; n.perm=10000; confint = TRUE; pvalue = TRUE; boot.type = "bca"; boot.values = F; perm.values = F; pvalue.type = "CI.inversion"; dist='binomial'; link='logit'
 #
-# tt=glm.r(y~x1+x5, df, confint = T, n.perm=1000, pvalue = T, dist=dist, link=link); tt
+# tt=glm_r(y~x1+x5, df, confint = T, n.perm=1000, pvalue = T, dist='binomial', link='logit'); tt
+
+
+
 # summary(glm(y~x1+x5, df, family=binomial('logit')))$coefficient
 # confint(glm(y~x1+x5, df, family=binomial('logit')))
 #
 # tictoc::tic()
-# glm.r(y~x1+x5, df, confint = T, n.perm=10000, pvalue = T, dist=dist, link=link)
+# glm_r(y~x1+x5, df, confint = T, n.perm=10000, pvalue = T, dist=dist, link=link)
 # tictoc::toc()
 #
 #

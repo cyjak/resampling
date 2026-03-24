@@ -1,6 +1,6 @@
 
 
-boot.bca.glm = function(data, n, theta_hat, boot.values, quantiles, alpha, IVs, dist, link){
+boot.bca.glm = function(formula, data, n, theta_hat, boot.values, quantiles, alpha, IVs, dist, link){
 
   theta_jack = data.frame(matrix(nrow=n, ncol=ncol(data)))
   for(i in 1:n)      theta_jack[i, ] <- c(my.glm(formula, data[-i, ], dist=dist, link=link)$coeff)
