@@ -9,6 +9,13 @@ lm_r = function(formula, data, conf.level = 0.95,
   alpha <- 1 - conf.level
 
 
+  data <- if (missing(data)) {
+    model.frame(formula, data = parent.frame())
+  } else {
+    if (!is.data.frame(data)) stop("'data' must be a data.frame or NULL")
+    model.frame(formula, data = data)
+  }
+
 
   # formula <- as.formula(formula)
   all_variables = as.character( attr(terms(formula), 'variables')[-1])
@@ -117,9 +124,11 @@ lm_r = function(formula, data, conf.level = 0.95,
 # formula = as.formula('y~x1+x5')
 # data = df; conf.level = 0.95; seed=0; n.perm=10000; confint = TRUE; pvalue = TRUE; boot.type = "bca"; boot.values = F; perm.values = F; pvalue.type = "CI.inversion"
 # n=100
-# df = data.frame(x1=rnorm(n,0,1), x5=rnorm(n,0,1)); df$y = rnorm(n,10,20)+-1*df$x1+3*df$x5
+# x1=rnorm(n,0,1); x5=rnorm(n,0,1)
+# y = rnorm(n,10,20)+-1*x1+3*x5
+# # df = data.frame(x1, x5, y)
 #
-# tt=lm_r(y~x1+x5, df, confint=T, n.perm=1000, pvalue=T)$coefficients; tt
+# tt=lm_r(y~x1+x5, confint=T, n.perm=1000, pvalue=T)$coefficients; tt
 
 
 

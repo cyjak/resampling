@@ -2,7 +2,7 @@
 
 
 
-AUC_r = function(formula, data, alternative = c("two.sided", "less", "greater"), conf.level = 0.95,
+AUC_r = function(formula, data=NULL, alternative = c("two.sided", "less", "greater"), conf.level = 0.95,
                  seed=0, n.perm=10000, confint = TRUE, pvalue = TRUE, boot.type = c("bca", "percentile"), pvalue.type = c("CI.inversion", "permutation"), boot.values = F, perm.values = F,
                  ...){
 
@@ -10,6 +10,12 @@ AUC_r = function(formula, data, alternative = c("two.sided", "less", "greater"),
   alternative <- match.arg(alternative)
   pvalue.type <- match.arg(pvalue.type)
   if (pvalue && pvalue.type=='CI.inversion' && alternative!='two.sided') stop("The CI.inversion method for computing the p-value is only availble for two-sided tests. Choose instead the 'permutation' method.")
+
+  if (is.null(data)) {
+    data = model.frame(formula, data = parent.frame())
+  } else {
+    if (!is.data.frame(data)) stop("'data' must be a data.frame or NULL")
+  }
 
   quick.auc = function(continuous, binary){
 
