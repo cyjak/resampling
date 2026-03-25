@@ -133,19 +133,19 @@ glm_r = function(formula, family = gaussian, data, conf.level = 0.95,
 
 
 
-set.seed(0)
-n=100
-x1 = rnorm(n,0,1)
-x5 = rnorm(n,0,1)
-y = rbinom(n,1,.5)
-df = data.frame(x1,x5,y)
-# formula = as.formula('y~x1+x5')
-# data = df; conf.level = 0.95; seed=0; n.perm=10000; confint = TRUE; pvalue = TRUE; boot.type = "bca"; boot.values = F; perm.values = F; pvalue.type = "CI.inversion"; dist='binomial'; link='logit'
-
-tt=glm_r(y~x1+x5, df, confint = T, n.perm=1000, pvalue = T, dist='binomial', link='logit'); tt
-tt=glm_r(y~x1+x5, df, family=binomial('logit'), confint=T, n.perm=1000, pvalue=T); tt
-tt=glm_r(y~x1+x5, data=df, confint=T, n.perm=1000, pvalue=T); tt
-tt=glm_r(y~x1+x5, family=binomial('identity'), confint=T, n.perm=1000, pvalue=T); tt
+# set.seed(0)
+# n=100
+# x1 = rnorm(n,0,1)
+# x5 = rnorm(n,0,1)
+# y = rbinom(n,1,.5)
+# df = data.frame(x1,x5,y)
+# # formula = as.formula('y~x1+x5')
+# # data = df; conf.level = 0.95; seed=0; n.perm=10000; confint = TRUE; pvalue = TRUE; boot.type = "bca"; boot.values = F; perm.values = F; pvalue.type = "CI.inversion"; dist='binomial'; link='logit'
+#
+# tt=glm_r(y~x1+x5, df, confint = T, n.perm=1000, pvalue = T, dist='binomial', link='logit'); tt
+# tt=glm_r(y~x1+x5, df, family=binomial('logit'), confint=T, n.perm=1000, pvalue=T); tt
+# tt=glm_r(y~x1+x5, data=df, confint=T, n.perm=1000, pvalue=T); tt
+# tt=glm_r(y~x1+x5, family=binomial('identity'), confint=T, n.perm=1000, pvalue=T); tt
 
 
 
