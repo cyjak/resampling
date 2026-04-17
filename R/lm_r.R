@@ -1,6 +1,6 @@
 #' @export
 
-lm_r = function(formula, data, conf.level = 0.95,
+lm_r = function(formula, data, conf.level = 0.95, stratifying_variables = NULL,
                 seed=0, n.perm=10000, confint = TRUE, pvalue = TRUE, boot.type = c("bca", "percentile"), pvalue.type = c("CI.inversion", "permutation"), boot.values = F, perm.values = F,
                 ...){
 
@@ -37,13 +37,26 @@ lm_r = function(formula, data, conf.level = 0.95,
     quantiles = c(alpha/sided, 1-alpha/sided)
 
     set.seed(seed)
-    boot.values = t(as.data.frame(replicate(n.perm, {my.lm(formula, data[sample(n, n, replace=TRUE), ])$coeff})))
+    if (is.null(stratifying_variables)){
+      boot.values = t(as.data.frame(replicate(n.perm, {my.lm(formula, data[sample(n, n, replace=TRUE), ])$coeff})))
+
+    } else {
+      group_id <- do.call(paste, c(data[stratifying_variables], sep = "___"))
+      groups <- split(seq_len(nrow(data)), group_id)
+
+      boot.values = t(as.data.frame(replicate(n.perm, {
+        sampled_idx <- unlist(lapply(groups, function(idxs) {
+          sample(idxs, length(idxs), replace = TRUE)
+        }), use.names = FALSE)
+        my.lm(formula, data[sampled_idx, ])$coeff
+        })))
+    }
+
     output = boot.bca.lm(formula=formula, data = data, n = n, theta_hat = theta_hat, boot.values = boot.values, quantiles = quantiles, alpha = alpha, IVs = IVs)
     coefficients = data.frame(row.names = namy,
-                              Estimate = theta_hat,
-                              lower = as.numeric(output[output$quantiles==quantiles[1], 3:ncol(output)]),
-                              upper = as.numeric(output[output$quantiles==quantiles[2], 3:ncol(output)]) )
-
+                                Estimate = theta_hat,
+                                lower = as.numeric(output[output$quantiles==quantiles[1], 3:ncol(output)]),
+                                upper = as.numeric(output[output$quantiles==quantiles[2], 3:ncol(output)]) )
   }
 
 
@@ -126,9 +139,11 @@ lm_r = function(formula, data, conf.level = 0.95,
 # n=100
 # x1=rnorm(n,0,1); x5=rnorm(n,0,1)
 # y = rnorm(n,10,20)+-1*x1+3*x5
-# # df = data.frame(x1, x5, y)
+# z = rbinom(n, 1, .2)
+# df = data.frame(x1, z, y)
 #
-# tt=lm_r(y~x1+x5, confint=T, n.perm=1000, pvalue=T)$coefficients; tt
+# tictoc::tic(); tt=lm_r(y~x1+z, data=df, confint=T, n.perm=10000, pvalue=T)$coefficients; tt; tictoc::toc()
+# tictoc::tic(); tt=lm_r(y~x1+z, data=df, stratifying_variables = c('z'), confint=T, n.perm=10000, pvalue=T)$coefficients; tt; tictoc::toc()
 
 
 

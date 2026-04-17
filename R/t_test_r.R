@@ -1,6 +1,6 @@
 #' @export
 #'
-t_test_r = function (x, y = NULL, alternative = c("two.sided", "less", "greater"),
+t_test_r = function (x, y = NULL, stratified.boot = TRUE, alternative = c("two.sided", "less", "greater"),
           mu = 0, paired = FALSE, var.equal = FALSE, conf.level = 0.95,
           seed=0, n.perm=10000, confint = TRUE, pvalue = TRUE, boot.type = c("bca", "percentile"), pvalue.type = c("CI.inversion", "permutation"), boot.values = F, perm.values = F,
           check.variance = TRUE,
@@ -102,7 +102,6 @@ t_test_r = function (x, y = NULL, alternative = c("two.sided", "less", "greater"
         mean(all_values[positions==1]) -   mean(all_values[positions==2])
       })
 
-
     } else {   # if one sample t-test or paired t-test
       set.seed(seed)
       perm_theta_hat = replicate(n.perm, { mean(sign(runif(length(x), -1, 1)) * abs(x)) })
@@ -142,9 +141,17 @@ t_test_r = function (x, y = NULL, alternative = c("two.sided", "less", "greater"
   set.seed(seed)
   if (confint){
     if (method == 'Two Sample t-test'){
+      if (stratified.boot){
       boot_theta_hat = replicate(n.perm, {
-        mean(sample(x, length(x), replace=TRUE)) - mean(sample(y, length(y), replace=TRUE)) - mu
-      })} else {
+        mean(sample(x, length(x), replace=TRUE)) - mean(sample(y, length(y), replace=TRUE)) - mu  })
+      } else {
+        temp_df = data.frame(outcome = c(x, y), group = c(rep('A', length(x)), rep('B', length(y))))
+        boot_theta_hat = replicate(n.perm, {
+          temp_df2 = temp_df[sample(1:nrow(temp_df), nrow(temp_df), replace=TRUE), ]
+          mean(temp_df2$outcome[temp_df2$group=='A']) - mean(temp_df2$outcome[temp_df2$group=='B']) - mu  })
+      }
+
+      } else {
         boot_theta_hat = replicate(n.perm, {
           mean(sample(x, length(x), replace=TRUE)) - mu   })
       }
@@ -265,11 +272,17 @@ t_test_r = function (x, y = NULL, alternative = c("two.sided", "less", "greater"
 
 
 
-
-
-
-# t.test.r(df$outy[df$groupy==0], df$outy[df$groupy==1], paired=T)
-
-
+#
+#
+#
+# set.seed(0)
+# n=100
+# x5 = rnorm(20)
+# y5 = rnorm(20)
+#
+# tictoc::tic(); t_test_r(x5, y5, stratified.boot = T); tictoc::toc()
+# tictoc::tic(); t_test_r(x5, y5, stratified.boot = F); tictoc::toc()
+# t.test(x5, y5)
+#
 
 

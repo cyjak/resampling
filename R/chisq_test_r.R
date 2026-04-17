@@ -14,7 +14,7 @@ chisq_test_r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), lengt
     E = outer(row_sums, col_sums) / total_obs
     sum((abs(x - E) - YATES)^2/E)
   }
-  if (pvalue && pvalue.type=='CI.inversion' && alternative!='two.sided') stop("The CI.inversion method for computing the p-value is only availble for two-sided tests. Choose instead the 'permutation' method.")
+  # if (pvalue && pvalue.type=='CI.inversion' && alternative!='two.sided') stop("The CI.inversion method for computing the p-value is only availble for two-sided tests. Choose instead the 'permutation' method.")
 
 
   DNAME <- deparse(substitute(x))
@@ -179,8 +179,9 @@ chisq_test_r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), lengt
        set.seed(seed)
        boot_theta_hat = replicate(n.perm, {
          tempy <- temp_df[sample(1:nb_row, replace=TRUE), ]
-         sum(tempy[tempy[,1]==1, 2]) / length(tempy[tempy[,1]==1, 2]) - sum(tempy[tempy[,1]==0, 2]) / length(tempy[tempy[,1]==0, 2])
-       })
+         sum(tempy[tempy[,1]==1, 2]) / length(tempy[tempy[,1]==1, 2]) - sum(tempy[tempy[,1]==0, 2]) / length(tempy[tempy[,1]==0, 2])  })
+
+
 
        x_table = x
        if (boot.type == 'bca'){
@@ -275,9 +276,10 @@ chisq_test_r = function (x, y = NULL, correct = TRUE, p = rep(1/length(x), lengt
 # set.seed(6)
 # x=c(rbinom(50,1,.2), rbinom(50,1,.1))
 # y=rep(0:1, each=50)
-# chisq.test.r(x, y, pvalue=T, confint=T, correct = F)
+# chisq_test_r(x, y, pvalue=T, confint=T, correct = F)
 # chisq.test(x, y, correct=F)
-# chisq.test.r(x, y)
+# chisq_test_r(x, y)
+#
 #
 # tt = chisq.test.r(x=data.frame(x1=c(20, 80), x2=c(50,50)), pvalue=T, boot.values = T)
 # tt

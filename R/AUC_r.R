@@ -2,7 +2,7 @@
 
 
 
-AUC_r = function(formula, data=NULL, alternative = c("two.sided", "less", "greater"), conf.level = 0.95,
+AUC_r = function(formula, data=NULL, stratified.boot = TRUE, alternative = c("two.sided", "less", "greater"), conf.level = 0.95,
                  seed=0, n.perm=10000, confint = TRUE, pvalue = TRUE, boot.type = c("bca", "percentile"), pvalue.type = c("CI.inversion", "permutation"), boot.values = F, perm.values = F,
                  ...){
 
@@ -20,17 +20,16 @@ AUC_r = function(formula, data=NULL, alternative = c("two.sided", "less", "great
   quick.auc = function(continuous, binary){
 
     tempy = data.frame(continuous, binary)
+    tempy = tempy[complete.cases(tempy), ]
     tempy = tempy[order(tempy$continuous, decreasing = TRUE), ]
     continuous = tempy$continuous
     binary = tempy$binary
 
-    modas = unique(na.omit(binary))
+
     TN = cumsum(binary == modas[1])
     TP = cumsum(binary == modas[2])
-
-    FP = sum(binary == modas[1]) - TN
-    FN = sum(binary == modas[2]) - TP
-
+    # FP = sum(binary == modas[1]) - TN
+    # FN = sum(binary == modas[2]) - TP
     sensi = TP / sum(binary == modas[1])
     speci = TN / sum(binary == modas[2])
 
@@ -39,15 +38,20 @@ AUC_r = function(formula, data=NULL, alternative = c("two.sided", "less", "great
   }
 
 
+
   continuous = data[[formula[[2]]]]
   binary = data[[formula[[3]]]]
   temp = data.frame(continuous, binary)
   temp = temp[complete.cases(temp), ]
   continuous = temp$continuous
   binary = temp$binary
+  modas = unique(na.omit(binary))
   theta_hat = quick.auc(temp$continuous, temp$binary)
   n = nrow(temp)
-
+  n_A = length(binary[binary==modas[1]])
+  n_B = length(binary[binary==modas[2]])
+  positions_A = which(binary==modas[1])
+  positions_B = which(binary==modas[2])
 
   ### permutation
   if (pvalue && pvalue.type=='permutation'){
@@ -72,10 +76,17 @@ AUC_r = function(formula, data=NULL, alternative = c("two.sided", "less", "great
   alpha <- 1 - conf.level
   if (confint){
     set.seed(seed)
-    boot_theta_hat = replicate(n.perm, {
-      positions = sample(1:n, n, replace=TRUE)
-      quick.auc(continuous = continuous[positions], binary = binary[positions])
-    })
+    if (stratified.boot){
+      boot_theta_hat = replicate(n.perm, {
+        positions = c(sample(positions_A, n_A, replace=TRUE), sample(positions_B, n_B, replace=TRUE))
+        quick.auc(continuous = continuous[positions], binary = binary[positions])
+      })
+    } else {
+      boot_theta_hat = replicate(n.perm, {
+        positions = sample(1:n, n, replace=TRUE)
+        quick.auc(continuous = continuous[positions], binary = binary[positions])
+      })
+    }
 
 
     if (alternative=='two.sided') sided=2 else sided=1
@@ -164,7 +175,17 @@ AUC_r = function(formula, data=NULL, alternative = c("two.sided", "less", "great
 
 
 
-
+# set.seed(1)
+# n=30
+# x = rnorm(n)
+# y = rnorm(n) + x
+# x = ifelse(x<median(x), 0, 1)
+# # y = ifelse(y<median(y), 0, 1)
+# AUC_r(y~x, stratified.boot = F)
+# AUC_r(y~x, stratified.boot = T)
+#
+#
+# brunnermunzel::brunnermunzel.test(y~x)
 
 
 
